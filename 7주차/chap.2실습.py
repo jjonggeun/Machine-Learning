@@ -19,7 +19,7 @@ plt.scatter(Wei, Len, color='darkgreen', label='Original Data', alpha=0.5)
 
 # 데이터 증강 (원본 데이터 점 주변에 20개의 추가 데이터 생성하면서 그래프에 추가)
 for i in range(len(Wei)):
-    for _ in range(20):
+    for _ in range(10):
         augmented_Wei = Wei[i] + np.random.normal(0, 0.2)  # 주변에 노이즈 추가
         augmented_Len = Len[i] + np.random.normal(0, 0.2)  # 주변에 노이즈 추가
         plt.scatter(augmented_Wei, augmented_Len, color='red', alpha=0.2, marker='o', label='Augmented Data')  # 증강된 데이터 그래프에 추가
