@@ -63,8 +63,7 @@ plt.title('MSE vs. Number of Basis Functions')
 plt.grid(True)
 plt.show()
 
-# 주어진 코드에서의 그래프 그리기
-# mse 그래프와 같이 그려질 수 있도록 위의 그래프 그리기 코드 아래에 추가합니다.
+
 
 # 가중치 계산
 K_values = [10]
