@@ -21,13 +21,6 @@ x_with_dummy = np.hstack((x1, x2, dummy_data))
 def Sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
-# w_new=[]
-# w_ = np.random.rand(3, 1) 
-# z = np.dot(x_with_dummy, w_)
-# p = Sigmoid(z) 
-# dif_cee=np.mean((p-y)*x_with_dummy, axis=0)
-# w_ -= 0.2 * dif_cee.reshape(-1,1)  # 경사 하강법 업데이트
-        
 # 경사 하강법 함수 정의
 def gradient_descent(X, y, alpha, rp):
     # 초기 가중치 랜덤 설정
@@ -36,7 +29,7 @@ def gradient_descent(X, y, alpha, rp):
     w0_history = []  # w0 변화 저장
     w1_history = []  # w1 변화 저장
     w2_history = []  # w2 변화 저장
-
+    accuracy_history = []
     
     for i in range(rp):
         
@@ -45,17 +38,16 @@ def gradient_descent(X, y, alpha, rp):
         p_oz = np.where(p >= 0.5, 1, 0) #예측값 0,1
         dif_cee=np.mean((p-y)*X, axis=0)
         w_ -= alpha * dif_cee.reshape(-1,1)  # 경사 하강법 업데이트
-        correct=np.sum(p_oz == y)/len(y)
+        accuracy=np.sum(p_oz == y)/len(y)
         # w0, w1, w2, MSE 값을 저장
         w0_history.append(w_[0][0])
         w1_history.append(w_[1][0])
         w2_history.append(w_[2][0])
-  
+        accuracy_history.append(accuracy)
     
-    return w0_history, w1_history, w2_history, w_
+    return w0_history, w1_history, w2_history, w_, accuracy_history
 
 
-w0_history, w1_history, w2_history, w_ = gradient_descent(x_with_dummy,y,0.3,4000)
 
 def aug_data(augmented_data, train_ratio, test_ratio):
     # 데이터를 분할하는 것이므로 분할한 것들의 합이 1이 나와야 함
