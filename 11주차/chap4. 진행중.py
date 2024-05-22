@@ -46,6 +46,7 @@ def aug_data(data, train_ratio, test_ratio):
 
     return train_set, test_set
 
+
 # 데이터 불러오기
 fold_dir = "C:\\Users\\user\\OneDrive - 한국공학대학교\\바탕 화면\\3학년 1학기\\머신러닝실습\\Machine-Learning\\NN_data.csv"
 temp_data = pd.read_csv(fold_dir)
@@ -58,8 +59,12 @@ train_data, test_data = aug_data(temp_data, 0.7, 0.3)
 x_train = train_data[:, :3]
 y_train = train_data[:, 3].reshape(-1, 1)
 
+x_test = test_data[:,:3]
+y_test = test_data[:,3].reshape(-1,1)
+
 # 입력 속성 수와 출력 클래스 수 추출
 M = x_train.shape[1]
+#y_train에서 고유한 (중복되지 않는) 값들을 찾아서 정렬
 output_size = len(np.unique(y_train))
 
 # hidden layer의 노드 수
@@ -71,7 +76,7 @@ w = np.random.rand(output_size, hidden_size + 1)
 
 # 학습 파라미터 설정
 learning_rate = 0.1
-epochs = 200
+epochs = 50
 
 # One-Hot Encoding
 y_train_one_hot = np.zeros((len(y_train), output_size))
@@ -80,7 +85,7 @@ for i in range(len(y_train)):
 
 # 데이터에 더미 변수 추가
 x_train_with_dummy = np.hstack((x_train, np.ones((len(x_train), 1))))
-
+x_test_with_dummy = np.hstack((x_test, np.ones((len(x_test), 1))))
 # 전체 데이터 수
 total_samples = len(x_train)
 
@@ -101,10 +106,13 @@ for epoch in range(epochs):
         # Update weights
         w -= learning_rate * wmse
         v -= learning_rate * vmse
+    A_test, b_test, b_with_dummy_test, B_test, y_hat_test = forward_propagation(x_test_with_dummy, v, w)
     
     # 전체 데이터에 대해 정확도 계산
     A_train, b_train, b_with_dummy_train, B_train, y_hat_train = forward_propagation(x_train_with_dummy, v, w)
     predicted_labels = np.argmax(y_hat_train, axis=0) + 1
+    y_hat_test_index = np.argmax(y_hat_test, axis=0)+1
+    y_hat_test_index = y_hat_test_index.reshape(-1,1)
     accuracy = np.mean(predicted_labels == y_train.flatten())
     accuracy_list.append(accuracy)
     
@@ -112,8 +120,6 @@ for epoch in range(epochs):
     mse = np.mean((y_hat_train - y_train_one_hot.T) ** 2)
     mse_list.append(mse)
     
-
-#행은 이웃풋클래스가 결정(y_hat_tarin) 
 
 
 # 그래프 출력
