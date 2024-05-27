@@ -50,8 +50,8 @@ def aug_data(data, train_ratio, test_ratio):
 def compute_confusion_matrix(y_true, y_pred, num_classes):
     confusion_matrix = np.zeros((num_classes, num_classes))
     for i in range(len(y_true)):
-        row_index = int(y_pred[i]) - 1
-        col_index = int(y_true[i]) - 1
+        row_index = int(y_pred[i])
+        col_index = int(y_true[i])
         confusion_matrix[row_index, col_index] += 1
     return confusion_matrix
 
@@ -87,15 +87,15 @@ M = x_train.shape[1]
 output_size = len(np.unique(y_train))
 
 # hidden layer의 노드 수
-hidden_size = 10
+hidden_size = 5
 
 # weight 초기화
-v = np.random.rand(hidden_size, M + 1)*0.01
-w = np.random.rand(output_size, hidden_size + 1)*0.01
+v = np.random.rand(hidden_size, M + 1)
+w = np.random.rand(output_size, hidden_size + 1)
 
 # 학습 파라미터 설정
-learning_rate = 0.01
-epochs = 50
+learning_rate = 0.1
+epochs = 40
 
 # One-Hot Encoding
 y_train_one_hot = np.zeros((len(y_train), output_size))
@@ -148,8 +148,7 @@ w = best_w
 # confusion matrix 계산
 confusion_matrix = compute_confusion_matrix(y_test, y_hat_test_index, output_size)
 
-# print(confusion_matrix)
-
+print(confusion_matrix)
 # 그래프 출력
 plt.figure(figsize=(18, 6))
 
@@ -160,7 +159,7 @@ plt.ylabel('Accuracy')
 plt.title('Accuracy over epochs')
 plt.legend()
 plt.grid(True)
-# plt.ylim(0, 1)
+plt.ylim(0, 1)
 
 plt.subplot(1, 2, 2)
 plt.plot(range(1, epochs+1), mse_list, label='MSE', color='red')
@@ -169,6 +168,6 @@ plt.ylabel('MSE')
 plt.title('MSE over epochs')
 plt.legend()
 plt.grid()
-# plt.ylim(0, 1)
+plt.ylim(0, 1)
 
 plt.show()

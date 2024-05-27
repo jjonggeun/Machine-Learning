@@ -28,19 +28,13 @@ def backward_propagation(x_with_dummy, y_one_hot, A, b, b_with_dummy, B, y_hat, 
 
 # 데이터 분할 함수
 def aug_data(data, train_ratio, test_ratio):
-    # 데이터를 분할하는 것이므로 분할한 것들의 합이 1이 나와야 함
     assert train_ratio + test_ratio == 1
 
-    # 데이터의 총 개수
     total_samples = len(data)
-    
-    # 각 세트의 크기 계산
     train_size = int(total_samples * train_ratio)
 
-    # 데이터를 랜덤하게 섞음
     np.random.shuffle(data)
 
-    # 데이터 분할
     train_set = data[:train_size]
     test_set = data[train_size:]
 
@@ -50,73 +44,79 @@ def aug_data(data, train_ratio, test_ratio):
 def compute_confusion_matrix(y_true, y_pred, num_classes):
     confusion_matrix = np.zeros((num_classes, num_classes))
     for i in range(len(y_true)):
-        row_index = int(y_pred[i]) - 1
-        col_index = int(y_true[i]) - 1
+        row_index = int(y_pred[i])
+        col_index = int(y_true[i])
         confusion_matrix[row_index, col_index] += 1
     return confusion_matrix
 
+# def feature_1 (input_data):
+#     #코드작성
+#     return output_value
+# x_0_set = np.array([],dtype='float32')
+# x_0_set = np.resize(x_0_set, (0.5))
+# for i in range(1,501):
+#     temp_name='0_' + str(i) + '.csv'
+#     temp_image = pd.read.csv(temp_name, header=None)
+#     temp_image = temp_image.to_numpy(dtype = 'float32')
+    
+#     x0=feature_1()
+    
 # 데이터 불러오기
 fold_dir = "C:\\Users\\user\\OneDrive - 한국공학대학교\\바탕 화면\\3학년 1학기\\머신러닝실습\\Machine-Learning\\MINIST Data\\"
-total_data = np.zeros((784, 1500))  # 784행 1500열의 배열을 초기화합니다.
+total_data = np.zeros((784, 1500))
 
 for j in range(3):
-    for i in range(500):  
-        file_name = f"{j}_{i+1}.csv"  # i를 1부터 시작하도록 수정합니다.
+    for i in range(500):
+        file_name = f"{j}_{i+1}.csv"
         file_path = fold_dir + file_name
         temp_data = pd.read_csv(file_path, header=None)
         total_data[:, j * 500 + i] = temp_data.values.flatten()
 
-# 각 클래스에 해당하는 레이블을 생성합니다.
+# y값이 0,1,2이므로 zeros로 0을, ones로 1을, ones*2로 2를 만들어서, vstack로 수직으로 쌓아줌
 y = np.hstack((np.zeros(500), np.ones(500), 2 * np.ones(500))).reshape(-1,1)
-
-# total_data와 레이블을 합칩니다.
+# 위에서 구한y와 연결
 total_y = np.vstack((total_data, y.T))
 
-# 데이터 분할
 train_data, test_data = aug_data(total_y.T, 0.7, 0.3)
 
-# 데이터 분리
 x_train = train_data[:, :784]
 y_train = train_data[:, 784].reshape(-1, 1)
 
 x_test = test_data[:, :784]
 y_test = test_data[:, 784].reshape(-1,1)
 
-# 입력 속성 수와 출력 클래스 수 추출
 M = x_train.shape[1]
 output_size = len(np.unique(y_train))
 
-# hidden layer의 노드 수
-hidden_size = 10
+hidden_size = 5
 
-# weight 초기화
-v = np.random.rand(hidden_size, M + 1)*0.01
-w = np.random.rand(output_size, hidden_size + 1)*0.01
+v = np.random.rand(hidden_size, M + 1) * 0.01
+w = np.random.rand(output_size, hidden_size + 1) * 0.01
 
-# 학습 파라미터 설정
-learning_rate = 0.01
-epochs = 50
+learning_rate = 0.1
+epochs = 100
 
-# One-Hot Encoding
 y_train_one_hot = np.zeros((len(y_train), output_size))
 for i in range(len(y_train)):
     y_train_one_hot[i, int(y_train[i])] = 1
+    
+y_test_one_hot = np.zeros((len(y_test), output_size))
+for i in range(len(y_test)):
+    y_test_one_hot[i, int(y_test[i])] = 1
 
-# 데이터에 더미 변수 추가
 x_train_with_dummy = np.hstack((x_train, np.ones((len(x_train), 1))))
 x_test_with_dummy = np.hstack((x_test, np.ones((len(x_test), 1))))
 total_samples = len(x_train)
 
-# 정확도와 MSE를 저장할 리스트 초기화
 accuracy_list = []
 mse_list = []
+mse_test_list = []
+test_accuracy_list = []
 
-# 최적의 가중치를 저장할 변수 초기화
 best_accuracy = 0
-best_v = v
-best_w = w
+best_v = np.copy(v)
+best_w = np.copy(w)
 
-# 학습
 for epoch in range(epochs):
     for step in range(total_samples):
         A, b, b_with_dummy, B, y_hat = forward_propagation(x_train_with_dummy[step:step+1], v, w)
@@ -124,51 +124,53 @@ for epoch in range(epochs):
         w -= learning_rate * wmse
         v -= learning_rate * vmse
     
-    # 테스트 데이터에 대해 정확도 계산
+    # Train set accuracy and MSE
+    A_train, b_train, b_with_dummy_train, B_train, y_hat_train = forward_propagation(x_train_with_dummy, v, w)
+    predicted_labels_train = np.argmax(y_hat_train, axis=0)
+    train_accuracy = np.mean(predicted_labels_train == y_train.flatten())
+    train_mse = np.mean((y_hat_train - y_train_one_hot.T) ** 2)
+    accuracy_list.append(train_accuracy)
+    mse_list.append(train_mse)
+    
+    # Test set accuracy and MSE
     A_test, b_test, b_with_dummy_test, B_test, y_hat_test = forward_propagation(x_test_with_dummy, v, w)
-    y_hat_test_index = np.argmax(y_hat_test, axis=0)
-    test_accuracy = np.mean(y_hat_test_index == y_test.flatten())
+    predicted_labels_test = np.argmax(y_hat_test, axis=0)
+    test_accuracy = np.mean(predicted_labels_test == y_test.flatten())
+    test_mse = np.mean((y_hat_test - y_test_one_hot.T) ** 2)
+    test_accuracy_list.append(test_accuracy)
+    mse_test_list.append(test_mse)
     
     if test_accuracy > best_accuracy:
         best_accuracy = test_accuracy
         best_v = np.copy(v)
         best_w = np.copy(w)
 
-    A_train, b_train, b_with_dummy_train, B_train, y_hat_train = forward_propagation(x_train_with_dummy, v, w)
-    predicted_labels = np.argmax(y_hat_train, axis=0)
-    accuracy = np.mean(predicted_labels == y_train.flatten())
-    accuracy_list.append(accuracy)
-    
-    mse = np.mean((y_hat_train - y_train_one_hot.T) ** 2)
-    mse_list.append(mse)
-
 v = best_v
 w = best_w
 
-# confusion matrix 계산
-confusion_matrix = compute_confusion_matrix(y_test, y_hat_test_index, output_size)
+# Test set의 최종 confusion matrix
+confusion_matrix = compute_confusion_matrix(y_test, predicted_labels_test, output_size)
+print(confusion_matrix)
 
-# print(confusion_matrix)
-
-# 그래프 출력
+# 그래프 그리기
 plt.figure(figsize=(18, 6))
 
 plt.subplot(1, 2, 1)
-plt.plot(range(1, epochs+1), accuracy_list, label='Accuracy', color='blue')
+plt.plot(range(1, epochs+1), accuracy_list, label='Train Accuracy', color='blue')
+plt.plot(range(1, epochs+1), test_accuracy_list, label='Test Accuracy', color='green')
 plt.xlabel('Epochs')
 plt.ylabel('Accuracy')
-plt.title('Accuracy over epochs')
+plt.title('Accuracy over Epochs')
 plt.legend()
 plt.grid(True)
-# plt.ylim(0, 1)
 
 plt.subplot(1, 2, 2)
-plt.plot(range(1, epochs+1), mse_list, label='MSE', color='red')
+plt.plot(range(1, epochs+1), mse_list, label='Train MSE', color='red')
+plt.plot(range(1, epochs+1), mse_test_list, label='Test MSE', color='blue')
 plt.xlabel('Epochs')
 plt.ylabel('MSE')
-plt.title('MSE over epochs')
+plt.title('MSE over Epochs')
 plt.legend()
-plt.grid()
-# plt.ylim(0, 1)
+plt.grid(True)
 
 plt.show()
