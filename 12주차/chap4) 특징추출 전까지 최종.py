@@ -76,13 +76,13 @@ y_test = test_data[:, 784].reshape(-1,1)
 M = x_train.shape[1]
 output_size = len(np.unique(y_train))
 
-hidden_size = 5
+hidden_size = 10
 
 v = np.random.rand(hidden_size, M + 1) * 0.01
 w = np.random.rand(output_size, hidden_size + 1) * 0.01
 
-learning_rate = 0.1
-epochs = 100
+learning_rate = 0.01
+epochs = 200
 
 y_train_one_hot = np.zeros((len(y_train), output_size))
 for i in range(len(y_train)):
