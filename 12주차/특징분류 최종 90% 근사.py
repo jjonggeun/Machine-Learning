@@ -157,13 +157,13 @@ def confusion_matrix_(y_true, y_pred, num_classes):
 M = x_train.shape[1]
 output_size = len(np.unique(y_train))
 
-hidden_size = 5
+hidden_size = 10
 
 v = np.random.randn(hidden_size, M + 1) * 0.01
 w = np.random.randn(output_size, hidden_size + 1) * 0.01
 
 learning_rate = 0.01
-epochs = 100
+epochs = 200
 
 y_train_one_hot = np.zeros((len(y_train), output_size))
 for i in range(len(y_train)):
