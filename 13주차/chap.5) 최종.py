@@ -42,6 +42,7 @@ def k_means_clustering(data, K):
                 new_u[i] = u[i]
 
         # 중심이 변화하지 않으면 종료합니다.
+        # 만약 k값이 작게 되면 그 값이 생각보다 일찍 종료될 수 있는데 이 때문에 그 결과가 달라질 수 있음. 
         if np.allclose(u, new_u):
             break
 
@@ -57,7 +58,7 @@ temp_data = pd.read_csv(fold_dir) # CSV 파일을 pandas 데이터프레임으�
 temp_data = temp_data.to_numpy() # 데이터프레임을 numpy 배열로 변환합니다.
 
 # 원하는 K 값 설정
-K = 5 # 클러스터의 개수를 설정합니다. 이 값을 변경하여 다른 K 값을 테스트할 수 있습니다.
+K = 3
 
 # K-means Clustering 실행
 clusters, final_centers, initial_centers, iteration_count = k_means_clustering(temp_data, K)
@@ -114,3 +115,10 @@ plt.grid()
 plt.show()
 
 print(f'K={K}, Number of iterations: {iteration_count}')
+
+###############################################################################################
+
+
+
+
+
