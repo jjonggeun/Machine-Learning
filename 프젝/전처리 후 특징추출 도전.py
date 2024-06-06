@@ -58,6 +58,13 @@ def select_features(directory):
     gender_idx = np.where(column_names == "gender")[0][0]
     neuro_idx = np.where(column_names == "a neurological disorder")[0][0]
     target_idx = np.where(column_names == "heart disease")[0][0]
+    age_idx = np.where(column_names == "Age")[0][0]
+    hbp_idx = np.where(column_names == "High blood pressure")[0][0]
+    chol_idx = np.where(column_names == "Cholesterol")[0][0]
+    target_idx = np.where(column_names == "heart disease")[0][0]
+    height_idx = np.where(column_names == "height")[0][0]
+    weight_idx = np.where(column_names == "Weight")[0][0]
+    bmi_idx = np.where(column_names == "BMI")[0][0]
     
     # gender: female -> 0, male -> 1
     dataset[:, gender_idx] = np.where(dataset[:, gender_idx] == 'female', 0, 1)
@@ -74,6 +81,12 @@ def select_features(directory):
         mean_val = np.nanmean(col)  # 결측치를 제외한 평균값 계산
         col[np.isnan(col)] = mean_val  # 결측치를 평균값으로 대체
         dataset[:, i] = col
+        
+    # BMI 값 계산 및 업데이트 (Weight / (Height in meters)^2)
+    weight = dataset[:, weight_idx].astype(float)
+    height = dataset[:, height_idx].astype(float) / 100  # cm를 m로 변환
+    bmi = weight / (height ** 2)
+    dataset[:, bmi_idx] = bmi
     
     # 데이터 형식을 float로 변환
     dataset = dataset.astype(float)

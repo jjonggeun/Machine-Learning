@@ -58,6 +58,15 @@ def select_features(directory):
     gender_idx = np.where(column_names == "gender")[0][0]
     neuro_idx = np.where(column_names == "a neurological disorder")[0][0]
     target_idx = np.where(column_names == "heart disease")[0][0]
+    age_idx = np.where(column_names == "Age")[0][0]
+    hbp_idx = np.where(column_names == "High blood pressure")[0][0]
+    chol_idx = np.where(column_names == "Cholesterol")[0][0]
+    target_idx = np.where(column_names == "heart disease")[0][0]
+    height_idx = np.where(column_names == "height")[0][0]
+    weight_idx = np.where(column_names == "Weight")[0][0]
+    bmi_idx = np.where(column_names == "BMI")[0][0]
+    bpm_idx = np.where(column_names == "BPMeds")[0][0]
+    bloodsuger_idx = np.where(column_names == "blood sugar levels")[0][0]
     
     # gender: female -> 0, male -> 1
     dataset[:, gender_idx] = np.where(dataset[:, gender_idx] == 'female', 0, 1)
@@ -74,6 +83,7 @@ def select_features(directory):
         mean_val = np.nanmean(col)  # 결측치를 제외한 평균값 계산
         col[np.isnan(col)] = mean_val  # 결측치를 평균값으로 대체
         dataset[:, i] = col
+        
     
     # 데이터 형식을 float로 변환
     dataset = dataset.astype(float)
@@ -82,24 +92,23 @@ def select_features(directory):
     y_data = dataset[:, -1]
     
     # 특징 추출 (예시로 열 0, 1, 2을 선택한다고 가정)
-    feature_1 = dataset[:, 0] 
-    feature_2 = dataset[:, 1]
-    feature_n = dataset[:, 2]
+    feature_1 = dataset[:, weight_idx] / ((dataset[:, height_idx]/100)**2)
+    feature_2 = dataset[:, bpm_idx] - dataset[:, bloodsuger_idx]
+    feature_3 = (dataset[:, height_idx] * dataset[:, age_idx])+1
+    feature_4 = dataset[:, bmi_idx] / (dataset[:, chol_idx]+1)
     
     # 선택한 특징들을 결합
-    selected_features = np.column_stack((feature_1, feature_2, feature_n))
+    selected_features = np.column_stack((feature_1, feature_2, feature_3, feature_4))
     
     # 특징 데이터 마지막 열에 y값 추가
     features = np.column_stack((selected_features, y_data))
     
     return features
 
-# 예시 사용 코드
 directory = "C:\\Users\\user\\OneDrive - 한국공학대학교\\바탕 화면\\3학년 1학기\\머신러닝실습\\Machine-Learning\\"
 features = select_features(directory)
-# path = directory + "heart_disease_new.csv"
-# df = pd.read_csv(path)
-# 데이터 분할
+
+
 train_data, test_data = aug_data(features, 0.7, 0.3)
 
 # 데이터 분리
@@ -113,27 +122,24 @@ y_test = test_data[:, -1].reshape(-1, 1)
 M = x_train.shape[1]
 output_size = 1
 
-# hidden layer의 노드 수
-hidden_size = 5
+hidden_size = 10
 
-# weight 초기화 (작은 값으로 설정)
 v = np.random.randn(hidden_size, M + 1) * 0.01
 w = np.random.randn(output_size, hidden_size + 1) * 0.01
 
-# 학습 파라미터 설정
-learning_rate = 0.1
+learning_rate = 0.01
 epochs = 100
 
-# 데이터에 더미 변수 추가
+
 x_train_with_dummy = np.hstack((x_train, np.ones((len(x_train), 1))))
 x_test_with_dummy = np.hstack((x_test, np.ones((len(x_test), 1))))
 total_samples = len(x_train)
 
-# 정확도와 MSE를 저장할 리스트 초기화
 accuracy_list = []
 mse_list = []
+mse_test_list = []
+test_accuracy_list = []
 
-# 최적의 가중치를 저장할 변수 초기화
 best_accuracy = 0
 best_v = np.copy(v)
 best_w = np.copy(w)
