@@ -185,6 +185,8 @@ for epoch in range(epochs):
     accuracy = np.mean(predicted_labels == y_train.flatten())
     accuracy_list.append(accuracy)
     
+    print(test_accuracy)
+    
     mse = np.mean((y_hat_train - y_train.T) ** 2)
     mse_list.append(mse)
 

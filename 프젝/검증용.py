@@ -66,16 +66,17 @@ def select_features(file_path):
     # 특징 추출 (상관관계에 기반하여 조합)
     feature_1 = balanced_data[:, height_idx]
     # feature_2 = (balanced_data[:, hbp_idx] + 1) / (balanced_data[:, bloodsugar_idx] + 1)  # 고혈압과 혈당 수치의 비율
-    # feature_4 = balanced_data[:, weight_idx] / (balanced_data[:, height_idx] + 1)  # 체중과 키의 비율
+    feature_4 = balanced_data[:, weight_idx] / (balanced_data[:, age_idx]+10)  # 몸무게 나이의 비율
     feature_5 = balanced_data[:, weight_idx] / ((balanced_data[:, height_idx]/100)**2) #내가 구한 bmi
     # feature_6 = (balanced_data[:, gender_idx] + 1) * balanced_data[:, neuro_idx]  # 성별과 신경계 질환의 조합
-    # feature_7 = balanced_data[:, chol_idx] / (balanced_data[:, bloodsugar_idx] + 1)  # 콜레스테롤과 혈당 수치의 비율
+    # feature_7 = balanced_data[:, chol_idx] + (balanced_data[:, age_idx])  # 콜레스테롤과 혈당 수치의 비율
     # feature_8 = balanced_data[:, hbp_idx]   # 고혈압과 BPMeds의 조합
     # feature_10 = np.log(balanced_data[:, age_idx] + 1)
-    feature_11 = balanced_data[:, meat_idx] * (balanced_data[:, smoke_idx]+1)
+    # feature_11 = balanced_data[:,hbp_idx] /  (balanced_data[:, meat_idx] / (balanced_data[:, smoke_idx]+0.1)) 
+    feature_12 = ((balanced_data[:,smoke_idx]*10) + (balanced_data[:,meat_idx] * 10)) - balanced_data[:,height_idx] / 5
     
     # 선택한 특징들을 결합
-    selected_features = np.column_stack((feature_1,feature_11, feature_5))
+    selected_features = np.column_stack((feature_1,feature_12,feature_5,feature_4))
     # 특징 1개
     # selected_features = feature_1
     
