@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 
+import pandas as pd
+import numpy as np
+
 def select_features(file_path):
     path = directory + "heart_disease_new.csv"
     df = pd.read_csv(path)  # pandas를 사용하여 CSV 파일 읽기
@@ -48,37 +51,27 @@ def select_features(file_path):
     # 데이터 형식을 float로 변환
     dataset = dataset.astype(float)
     
-    # 편향 조정
-    yes_data = dataset[dataset[:, target_idx] == 1]
-    no_data = dataset[dataset[:, target_idx] == 0]
-    np.random.shuffle(no_data)
-    no_data = no_data[:500]  # no 데이터를 500개로 샘플링
-    balanced_data = np.vstack((yes_data, no_data))
     #===========================================================#
     # y_data 추출
-    # y_data = dataset[:, -1]  # 타겟 값 추출
+    y_data = dataset[:, -1]  # 타겟 값 추출
     
-    np.random.shuffle(balanced_data)  # 데이터를 섞기
+
     
     # y_data 추출
-    y_data = balanced_data[:, target_idx]  # 타겟 값 추출
+    y_data = dataset[:, target_idx]  # 타겟 값 추출
     
     # 특징 추출 (상관관계에 기반하여 조합)
-    feature_1 = balanced_data[:, height_idx]
-    # feature_2 = (balanced_data[:, hbp_idx] + 1) / (balanced_data[:, bloodsugar_idx] + 1)  # 고혈압과 혈당 수치의 비율
-    feature_4 = balanced_data[:, weight_idx] / (balanced_data[:, age_idx]+10)  # 몸무게 나이의 비율
-    feature_5 = balanced_data[:, weight_idx] / ((balanced_data[:, height_idx]/100)**2) #내가 구한 bmi
-    # feature_6 = (balanced_data[:, gender_idx] + 1) * balanced_data[:, neuro_idx]  # 성별과 신경계 질환의 조합
-    # feature_7 = balanced_data[:, chol_idx] + (balanced_data[:, age_idx])  # 콜레스테롤과 혈당 수치의 비율
-    # feature_8 = balanced_data[:, hbp_idx]   # 고혈압과 BPMeds의 조합
-    # feature_10 = np.log(balanced_data[:, age_idx] + 1)
-    # feature_11 = balanced_data[:,hbp_idx] /  (balanced_data[:, meat_idx] / (balanced_data[:, smoke_idx]+0.1)) 
-    feature_12 = ((balanced_data[:,smoke_idx]*10) + (balanced_data[:,meat_idx] * 10)) - balanced_data[:,height_idx] / 5
+    # 다양한 특징을 시도하였고 최종적으로 1, 5, 12를 사용
+    # 키가 상관관계가 매우 커서 사용
+    feature_1 = dataset[:, height_idx]
+    # 특징 5번 이 데이터에서 구해져있는 bmi는 값이 이상한 것들이 많아 따로 bmi를 구해보았다.
+    feature_2 = dataset[:, weight_idx] / ((dataset[:, height_idx]/100)**2) 
+    # 특징 12번 데이터에서 흡연이 yes이면 무조건 고기를 섭취하므로 두 값을 더하고, 큰 상관관계인 키/5를 빼주어 특징을 구현
+    feature_3 = ((dataset[:,smoke_idx]*10) + (dataset[:,meat_idx] * 10)) - dataset[:,height_idx] / 5
     
     # 선택한 특징들을 결합
-    selected_features = np.column_stack((feature_1,feature_12,feature_5,feature_4))
-    # 특징 1개
-    # selected_features = feature_1
+    selected_features = np.column_stack((feature_1, feature_2, feature_3))
+
     
     # 특징 데이터 마지막 열에 y값 추가
     features = np.column_stack((selected_features, y_data))
@@ -177,7 +170,7 @@ no_data_index=np.where(data[:,-1]==0)[0]
 no_data=data[no_data_index,:]   # no 데이터 추출
 
 yes=500  # 몇개씩 뽑을지
-no=400
+no= 500
 data_set=np.vstack([yes_data[:yes,:],no_data[:no,:]])  # yes:no 비율 검사용 셑 저장
 
 _,_,Test_Set=Split(data_set,0,0,1)  # 데이터 분할
@@ -200,6 +193,10 @@ One_hot_Test=One_Hot(Test_Set)  # Test 데이터에 대한 One_hot 생성
 # =============================================================================
 # w_hidden=pd.read_csv(fold_directory+"w_hidden.csv",header=None).to_numpy()
 # w_output=pd.read_csv(fold_directory+"w_output.csv",header=None).to_numpy()
+
+# address='0\\'
+best_v = pd.read_csv('C:\\Users\\user\\OneDrive - 한국공학대학교\\바탕 화면\\3학년 1학기\\머신러닝실습\\Machine-Learning\\프젝\\프젝 최종 2020142001 곽종근\\w_hidden.csv', header=None).to_numpy()
+best_w = pd.read_csv('C:\\Users\\user\\OneDrive - 한국공학대학교\\바탕 화면\\3학년 1학기\\머신러닝실습\\Machine-Learning\\프젝\\프젝 최종 2020142001 곽종근\\\w_output.csv', header=None).to_numpy()
 w_hidden,w_output=best_v,best_w
 
 y_hat_Test,Y_hat_Test=Two_Layer_Neural_Network(Test_Set,w_hidden,w_output)    # Test Set 순전파 batch size=N 진행해서 y_hat들 받아오기
