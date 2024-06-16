@@ -4,6 +4,9 @@ import pandas as pd
 import pandas as pd
 import numpy as np
 
+import pandas as pd
+import numpy as np
+
 def select_features(file_path):
     path = directory + "heart_disease_new.csv"
     df = pd.read_csv(path)  # pandas를 사용하여 CSV 파일 읽기
@@ -55,10 +58,6 @@ def select_features(file_path):
     # y_data 추출
     y_data = dataset[:, -1]  # 타겟 값 추출
     
-
-    
-    # y_data 추출
-    y_data = dataset[:, target_idx]  # 타겟 값 추출
     
     # 특징 추출 (상관관계에 기반하여 조합)
     # 다양한 특징을 시도하였고 최종적으로 1, 5, 12를 사용

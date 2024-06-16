@@ -42,9 +42,10 @@ def compute_confusion_matrix(y_true, y_pred, num_classes):
         confusion_matrix[row_index, col_index] += 1
     return confusion_matrix
 
-# 데이터 전처리 & 특징추출
+import pandas as pd
+import numpy as np
+
 def select_features(file_path):
-    #데이터 불러오기
     path = directory + "heart_disease_new.csv"
     df = pd.read_csv(path)  # pandas를 사용하여 CSV 파일 읽기
     dataset = np.array(df)  # pandas DataFrame을 numpy 배열로 변환
@@ -55,11 +56,9 @@ def select_features(file_path):
     #================== 전처리====================
     
     #path데이터(heart_disease_new.csv)에서 ,를 사용해 구분하고 문자열로 1행 분리
-    # CSV 파일의 첫 번째 행을 열 이름으로 사용하여 데이터 읽기
     column_names = np.genfromtxt(path, delimiter=',', dtype=str, max_rows=1)
     
-    # 열 이름을 기준으로 인덱스를 찾아서 저장하여 
-    # 각 특징들의 인덱스 위치가 저장됨
+    # 열 이름을 기준으로 인덱스 찾아서 저장
     gender_idx = np.where(column_names == "gender")[0][0]
     neuro_idx = np.where(column_names == "a neurological disorder")[0][0]
     target_idx = np.where(column_names == "heart disease")[0][0]
@@ -74,16 +73,16 @@ def select_features(file_path):
     meat_idx = np.where(column_names == "meat intake")[0][0]
     smoke_idx = np.where(column_names == "Smoking")[0][0]
     
-    # gender특징에서 female = 0, male = 1
+    # gender: female -> 0, male -> 1
     dataset[:, gender_idx] = np.where(dataset[:, gender_idx] == 'female', 0, 1)
     
-    # a neurological disorder특징에서 yes = 1, no = 0
+    # a neurological disorder: no -> 0, yes -> 1
     dataset[:, neuro_idx] = np.where(dataset[:, neuro_idx] == 'yes', 1, 0)
     
-    # heart disease결과에서 yes = 1, no = 0
+    # heart disease: yes -> 1, no -> 0
     dataset[:, target_idx] = np.where(dataset[:, target_idx] == 'yes', 1, 0)
     
-    # nan값인 결측값을 처리하는데 이를 각 열에 대한 평균값으로 대체함
+    # 결측치 처리 (각 열의 평균값으로 대체)
     for i in range(dataset.shape[1]):
         col = dataset[:, i].astype(float)
         mean_val = np.nanmean(col)  # 결측치를 제외한 평균값 계산
@@ -93,36 +92,23 @@ def select_features(file_path):
     # 데이터 형식을 float로 변환
     dataset = dataset.astype(float)
     
-    # 편향 조정 실제 코드에서는 필요가 없을 수 있으나 heart_disease_new파일에서 
-    # 결과 yes, no의 비율이 500:2500으로 no인 0으로만 분류하더라도(분류가 안되어도)
-    # 정확도가 높게 나오게 되므로 확실한 정확도 계산을 위해 5:5로 비율을 맞춰줌
-    yes_data = dataset[dataset[:, target_idx] == 1]
-    no_data = dataset[dataset[:, target_idx] == 0]
-    np.random.shuffle(no_data)
-    no_data = no_data[:500]  # no 데이터를 500개로 샘플링
-    balanced_data = np.vstack((yes_data, no_data))
     #===========================================================#
     # y_data 추출
-    # y_data = dataset[:, -1]  # 타겟 값 추출
+    y_data = dataset[:, -1]  # 타겟 값 추출
     
-    np.random.shuffle(balanced_data)  # 데이터를 섞기
-    
-    # y_data 추출
-    y_data = balanced_data[:, target_idx]  # 타겟 값 추출
     
     # 특징 추출 (상관관계에 기반하여 조합)
     # 다양한 특징을 시도하였고 최종적으로 1, 5, 12를 사용
     # 키가 상관관계가 매우 커서 사용
-    feature_1 = balanced_data[:, height_idx]
+    feature_1 = dataset[:, height_idx]
     # 특징 5번 이 데이터에서 구해져있는 bmi는 값이 이상한 것들이 많아 따로 bmi를 구해보았다.
-    feature_5 = balanced_data[:, weight_idx] / ((balanced_data[:, height_idx]/100)**2) 
+    feature_2 = dataset[:, weight_idx] / ((dataset[:, height_idx]/100)**2) 
     # 특징 12번 데이터에서 흡연이 yes이면 무조건 고기를 섭취하므로 두 값을 더하고, 큰 상관관계인 키/5를 빼주어 특징을 구현
-    feature_12 = ((balanced_data[:,smoke_idx]*10) + (balanced_data[:,meat_idx] * 10)) - balanced_data[:,height_idx] / 5
+    feature_3 = ((dataset[:,smoke_idx]*10) + (dataset[:,meat_idx] * 10)) - dataset[:,height_idx] / 5
     
     # 선택한 특징들을 결합
-    selected_features = np.column_stack((feature_1, feature_5, feature_12))
-    # 특징 1개
-    # selected_features = feature_x
+    selected_features = np.column_stack((feature_1, feature_2, feature_3))
+
     
     # 특징 데이터 마지막 열에 y값 추가
     features = np.column_stack((selected_features, y_data))
